@@ -3,7 +3,7 @@ import pygame
 import sys
 import math
 import random
-
+### Global Variables
 WHITE = (255,255,255)
 BLACK = (0,0,0)
 BLUE = (0,0,255)
@@ -15,11 +15,14 @@ AI = 1
 P_PIECE =1
 AI_PIECE = 2
 w_length = 4
+
+
 ##Create the 6*7 board for connect4
 def c_board():
     board = np.zeros((ROW_COUNTER,COLUMN_COUNTER))
     return board
 
+#help to drop on the board
 def drop(board, row, selection, piece):
     board[row][selection] = piece
 
@@ -27,14 +30,20 @@ def drop(board, row, selection, piece):
 def valid_location(board, selection):
     return  board[ROW_COUNTER - 1][selection] == 0
 
+#find the open place 
 def get_open_row(board,selection):
     for row in range(ROW_COUNTER):
         if board[row][selection] == 0:
             return row
-#will flip the board so first the bottom row will fill
+
+    
+#will flip the board so first the bottom row will fill and print
 def p_board(board):
     print(np.flip(board,0))
 
+
+
+#evaluate the score and help score()
 def evaluate(window, piece):
     sco = 0
     opposite = P_PIECE
@@ -55,6 +64,8 @@ def evaluate(window, piece):
 
     return sco
 
+
+# very important function, check for the match horizontally, vertically, diagonally
 def win(board, piece):
     #checking horizontal for win
     for col in range(COLUMN_COUNTER-3):
@@ -92,6 +103,8 @@ def d_board(board):
                 pygame.draw.circle(screen,BLUE, (int(c*SQUARE+SQUARE/2),height-int(r*SQUARE+SQUARE/2)),RADIUS)
     pygame.display.update()
 
+
+# get the score by the help of the function evaluate() and decide who is the winner
 def score(board, piece):
 
     sc = 0
@@ -131,28 +144,8 @@ def score(board, piece):
             sc+= evaluate(window,piece)
 
     return sc
-
-
-
-
-def best_move(board, piece):
-    v_location = location(board)
-    b_sc = -100
-    b_col = random.choice(v_location)
-
-    for col in v_location:
-        row = get_open_row(board,col)
-        temp = board.copy()
-        drop(temp,row,col,piece)
-        sc = score(temp,piece)
-
-        if sc > b_sc:
-            b_sc = sc
-            b_col = col
-    
-    return b_col
         
-
+#A helper function gor minimax()
 def check_terminalnode(board):
     if win(board, P_PIECE) or win(board, AI_PIECE) or len (location(board)) == 0 :
         return True
@@ -200,6 +193,8 @@ def check_terminalnode(board):
 #         return value
 ####################################################
 
+
+#this is our minimax algorithm which find the best move for AI by the help of alpha beta pruning
 def minmax(board,depth,alpha, beta, maximizingPlayer):
     valid_location = location(board)
     terminal = check_terminalnode(board)
@@ -291,9 +286,9 @@ while not finish:
 
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            #print(event.pos)
+    
 
-            #Player 
+            #for Player 
             if turn == PLAYER:
                posx = event.pos[0]
                selection = int(math.floor(posx/SQUARE))
@@ -306,16 +301,13 @@ while not finish:
                         screen.blit(label,(40,10))
                         finish = True
                     turn+=1
-                    #will alternate between players
+                    #will alternate between players, sometime AI will strat, sometime palyer
                     turn = turn%2
                     p_board(board)
                     d_board(board)
                         
-    #AI
+    #for AI
     if turn == AI and not finish:
-        # getting a random location on AI
-        #selection = random.randint(0,COLUMN_COUNTER-1)
-        #selection = best_move(board, AI_PIECE)
         selection, minmax_score = minmax(board,5,-math.inf, math.inf, True)
 
 
@@ -331,8 +323,9 @@ while not finish:
             p_board(board)
             d_board(board)
             turn+=1
-            #will alternate between players
+            #will alternate between players, sometime AI will strat, sometime palyer
             turn = turn%2
 
+    #will wait sometime if the game finish before it shuts down
     if finish:
         pygame.time.wait(1000)
